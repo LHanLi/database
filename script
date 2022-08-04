@@ -1,0 +1,33 @@
+# create table
+CREATE TABLE trading_secucode_1 (Date datetime,THScode char(20),name varchar(30),insert_time datetime, PRIMARY KEY(Date,THScode));
+
+
+# 删除 tradetime symbol相同记录，保留第一个
+delete from 1min
+where unique_id not in(
+	select first_id from(
+		select
+			min(unique_id) as first_id
+		from 1min
+		group by tradetime,symbol
+	) as x
+);
+
+
+
+
+# 将tradetime 为'2019-05-[0-1]. *'的记录的symbol按规则替换
+UPDATE 1min 
+SET continue_stat = 
+CASE symbol
+WHEN 'IC1905' THEN '当月连续'
+WHEN 'IC1906' THEN '下月连续' 
+WHEN 'IC1909' THEN '下季连续'
+WHEN 'IC1912' THEN '隔季连续'
+END
+WHERE tradetime regexp '2019-05-[0-1]. *';
+
+
+# 当primary key相同，替换；没有，insert；
+replace into trade_date_1 select * from trade_date;
+
