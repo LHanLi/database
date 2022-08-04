@@ -10,7 +10,6 @@ db = pymysql.connect(host='localhost',user='root',passwd='a23187',port=3306,db='
 cursor = db.cursor()
 
 # import data from table 1min
-# only select 01 02 03 06
 cursor.execute("select *  from 1min")
 data = cursor.fetchall()
 db.close()
@@ -31,8 +30,8 @@ for key in time_list:
 
 for i in data:
     # symbol,continue_stat,open,close,high,low,position,volume
-    dict_data[i[0]].append(i[1:-1])
-
+    dict_data[i[0]].append(list(i[1:-1]))
+    
 # remove bad data
 rm_time = set()
 for key in dict_data.keys():
@@ -43,7 +42,19 @@ for key in rm_time:
     print(key)
     del dict_data[key]
 
-valid_time = time_set - rm_time
+# continue stat
+for t in time_list:
+    symbols = [i[0] for i in dict_data[t]]
+    symbols.sort()
+    for i in dict_data[t]:
+        if(i[0] == symbols[0]):
+            i[1] = '当月连续'
+        if(i[0] == symbols[1]):
+            i[1] = '下月连续'
+        if(i[0] == symbols[2]):
+            i[1] = '下季连续'
+        if(i[0] == symbols[3]):
+            i[1] = '隔季连续'
 
 # save dict_data
-np.save('full_ok.npy',dict_data)
+np.save('ic_ok.npy',dict_data)
