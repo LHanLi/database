@@ -15,8 +15,15 @@ db = pymysql.connect(host='localhost',user='root',passwd='a23187',port=3306,db='
 cursor = db.cursor()
     
 # connect iFinD
-#THS_iFinDLogin('gj5212','234160')
-THS_iFinDLogin('ifind6521','751676')
+THS_iFinDLogin('gj5212','234160')
+#THS_iFinDLogin('ifind6521','751676')
+
+def normal(s):
+    if len(''.join([i for i in s if i.isdigit()])) == 4:
+        return s
+    else:
+        return ''.join([i for i in s[:2] if i.isalpha()])+'2'+s[-7:]
+
 
 def daily_commodity_update(date='2022-05-30'):
     print('update trade_date...')
@@ -25,6 +32,7 @@ def daily_commodity_update(date='2022-05-30'):
     print(date)
     cursor.execute(insert)
     db.commit()
+
 
 #    # login joinquant
 #    auth('15305333613','a23187')
@@ -74,7 +82,7 @@ def daily_commodity_update(date='2022-05-30'):
     codes = cursor.fetchall()
     for j in codes:
     # CFE data is not supported in THS
-        if('CFE' not in j[0]):
+        if('CFE' not in j[0] and 'CZC' not in j[0]):
             code = j[0]
             temp = THS_HQ(code,'preClose,open,high,low,close,changeRatio,volume,amount,openInterest,positionChange','',date,date).data 
             try:
@@ -84,6 +92,17 @@ def daily_commodity_update(date='2022-05-30'):
                 print(date,code,'no data')
                 continue
             cursor.execute(insert)
+        elif('CZC' in j[0]):
+            code = j[0]
+            temp = THS_HQ(code,'preClose,open,high,low,close,changeRatio,volume,amount,openInterest,positionChange','',date,date).data 
+            try:
+                insert = "REPLACE INTO trading_daily_price_1 (date, code,preclose,open,high,low,close,change_ratio,volume,amount,open_interest,position_change,insert_time) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(date,normal(code),temp['preClose'][0],temp['open'][0],temp['high'][0],temp['low'][0],temp['close'][0],temp['changeRatio'][0],temp['volume'][0],temp['amount'][0],temp['openInterest'][0],temp['positionChange'][0],datetime.datetime.now())
+                insert = insert.replace("'None'",'null')
+            except:
+                print(date,normal(code),'no data')
+                continue
+            cursor.execute(insert)
+            
     db.commit()
 
 # get trade days
@@ -103,3 +122,4 @@ for day in date:
     
     
 db.close()
+THS_iFinDLogout()
