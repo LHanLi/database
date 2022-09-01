@@ -23,7 +23,13 @@ def normal(s):
         return s
     else:
         return ''.join([i for i in s[:2] if i.isalpha()])+'2'+s[-7:]
-    
+
+
+def normal(s):
+    if len(''.join([i for i in s if i.isdigit()])) == 4:
+        return s
+    else:
+        return ''.join([i for i in s[:2] if i.isalpha()])+'2'+s[-7:]
 
 def daily_commodity_update(date='2022-05-30'):
     print('update trade_date...')
@@ -64,7 +70,6 @@ def daily_commodity_update(date='2022-05-30'):
 
     print('update trading_secucode...')
 ## import security
-# 上海期货交易所， 大连商品交易所，郑州，中金，上海国际能源
     trade_market = ['091001','091002','091003','091004','091027']
     query_str = [date + ';%s;monthcontract'%i for i in trade_market]
     for i in query_str:
@@ -74,8 +79,6 @@ def daily_commodity_update(date='2022-05-30'):
                 insert = "REPLACE INTO trading_secucode_00 (Date, THScode, name, insert_time) VALUES ('%s','%s','%s','%s')"%(getattr(row,'DATE'),getattr(row,'THSCODE'),getattr(row,'SECURITY_NAME'),datetime.datetime.now())
                 cursor.execute(insert)
             db.commit()
-        else:
-            print('no security')
 
 
     print('update trading_daily_price...')
@@ -95,6 +98,7 @@ def daily_commodity_update(date='2022-05-30'):
                 print(date,code,'no data')
                 continue
             cursor.execute(insert)
+            print('%s %s'%(date,normal(code)))
             
     db.commit()
 
