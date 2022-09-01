@@ -23,7 +23,7 @@ def normal(s):
         return s
     else:
         return ''.join([i for i in s[:2] if i.isalpha()])+'2'+s[-7:]
-
+    
 
 def daily_commodity_update(date='2022-05-30'):
     print('update trade_date...')
