@@ -64,6 +64,7 @@ def daily_commodity_update(date='2022-05-30'):
 
     print('update trading_secucode...')
 ## import security
+# 上海期货交易所， 大连商品交易所，郑州，中金，上海国际能源
     trade_market = ['091001','091002','091003','091004','091027']
     query_str = [date + ';%s;monthcontract'%i for i in trade_market]
     for i in query_str:
@@ -73,6 +74,8 @@ def daily_commodity_update(date='2022-05-30'):
                 insert = "REPLACE INTO trading_secucode_00 (Date, THScode, name, insert_time) VALUES ('%s','%s','%s','%s')"%(getattr(row,'DATE'),getattr(row,'THSCODE'),getattr(row,'SECURITY_NAME'),datetime.datetime.now())
                 cursor.execute(insert)
             db.commit()
+        else:
+            print('no security')
 
 
     print('update trading_daily_price...')
@@ -82,24 +85,14 @@ def daily_commodity_update(date='2022-05-30'):
     codes = cursor.fetchall()
     for j in codes:
     # CFE data is not supported in THS
-        if('CFE' not in j[0] and 'CZC' not in j[0]):
-            code = j[0]
-            temp = THS_HQ(code,'preClose,open,high,low,close,changeRatio,volume,amount,openInterest,positionChange','',date,date).data 
-            try:
-                insert = "REPLACE INTO trading_daily_price_1 (date, code,preclose,open,high,low,close,change_ratio,volume,amount,open_interest,position_change,insert_time) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(date,code,temp['preClose'][0],temp['open'][0],temp['high'][0],temp['low'][0],temp['close'][0],temp['changeRatio'][0],temp['volume'][0],temp['amount'][0],temp['openInterest'][0],temp['positionChange'][0],datetime.datetime.now())
-                insert = insert.replace("'None'",'null')
-            except:
-                print(date,code,'no data')
-                continue
-            cursor.execute(insert)
-        elif('CZC' in j[0]):
+        if('CFE' not in j[0]):
             code = j[0]
             temp = THS_HQ(code,'preClose,open,high,low,close,changeRatio,volume,amount,openInterest,positionChange','',date,date).data 
             try:
                 insert = "REPLACE INTO trading_daily_price_1 (date, code,preclose,open,high,low,close,change_ratio,volume,amount,open_interest,position_change,insert_time) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(date,normal(code),temp['preClose'][0],temp['open'][0],temp['high'][0],temp['low'][0],temp['close'][0],temp['changeRatio'][0],temp['volume'][0],temp['amount'][0],temp['openInterest'][0],temp['positionChange'][0],datetime.datetime.now())
                 insert = insert.replace("'None'",'null')
             except:
-                print(date,normal(code),'no data')
+                print(date,code,'no data')
                 continue
             cursor.execute(insert)
             
